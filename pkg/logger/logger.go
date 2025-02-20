@@ -22,7 +22,7 @@ func New(ctx context.Context) (context.Context, error) {
 		return nil, err
 	}
 
-	ctx = context.WithValue(ctx, LoggerKey, Logger{l: logger})
+	ctx = context.WithValue(ctx, LoggerKey, &Logger{l: logger})
 	return ctx, nil
 }
 
