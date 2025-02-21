@@ -20,8 +20,11 @@ func addLogMiddleware(
 	handler grpc.UnaryHandler,
 ) (interface{}, error) {
 	ctx, _ = logger.New(ctx)
-	reply, err := handler(ctx, req)
 	logger.GetLoggerFromCtx(ctx).Info(ctx, "gRPC top-level log demonstration!")
+	reply, err := handler(ctx, req)
+	if err != nil {
+		logger.GetLoggerFromCtx(ctx).Warn(ctx, "gRPC hanler returned an error", zap.Error(err))
+	}
 	return reply, err
 }
 
