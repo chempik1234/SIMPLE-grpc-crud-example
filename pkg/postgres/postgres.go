@@ -7,11 +7,11 @@ import (
 )
 
 type Config struct {
-	Host     string
-	Port     string
-	Username string
-	Password string
-	Database string
+	Host     string `yaml:"POSTGRES_HOST" env:"POSTGRES_HOST" env-default:"localhost"`
+	Port     string `yaml:"POSTGRES_PORT" env:"POSTGRES_PORT" env-default:"5432"`
+	Username string `yaml:"POSTGRES_USER" env:"POSTGRES_USER" env-default:"postgres"`
+	Password string `yaml:"POSTGRES_PASS" env:"POSTGRES_PASS" env-default:"1234"`
+	Database string `yaml:"POSTGRES_DB" env:"POSTGRES_DB" env-default:"postgres"`
 }
 
 func New(config Config) (*pgx.Conn, error) {

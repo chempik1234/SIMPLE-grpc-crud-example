@@ -4,47 +4,59 @@ import (
 	"context"
 	"fmt"
 	"go.uber.org/zap"
-	"google.golang.org/grpc"
 	"log"
-	"net"
+	"os"
+	"os/signal"
+	"time"
+	"yandexLyceumTheme3gRPC/internal/config"
 	"yandexLyceumTheme3gRPC/internal/ports"
-	"yandexLyceumTheme3gRPC/internal/service"
-	"yandexLyceumTheme3gRPC/pkg/api/test"
+	"yandexLyceumTheme3gRPC/internal/runner"
 	"yandexLyceumTheme3gRPC/pkg/logger"
 )
-
-func addLogMiddleware(
-	ctx context.Context,
-	req interface{},
-	info *grpc.UnaryServerInfo,
-	handler grpc.UnaryHandler,
-) (interface{}, error) {
-	ctx, _ = logger.New(ctx)
-	logger.GetLoggerFromCtx(ctx).Info(ctx, "gRPC top-level log demonstration!")
-	reply, err := handler(ctx, req)
-	if err != nil {
-		logger.GetLoggerFromCtx(ctx).Warn(ctx, "gRPC hanler returned an error", zap.Error(err))
-	}
-	return reply, err
-}
 
 func main() {
 	ctx := context.Background()
 	ctx, _ = logger.New(ctx)
 
-	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", 50051))
+	cfg, err := config.New()
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		logger.GetLoggerFromCtx(ctx).Fatal(ctx, "failed to load config", zap.Error(err))
 	}
+
+	/*
+		pgCfg := cfg.Postgres
+
+		fmt.Println(pgCfg)
+
+		db, err := postgres.New(pgCfg)
+		if err != nil {
+			logger.GetLoggerFromCtx(ctx).Warn(ctx, "failed to connect to database", zap.Error(err))
+		}
+		fmt.Println(db)
+	*/
 
 	ordersRepo := ports.NewOrdersRepositoryInMemory()
 
-	srv := service.New(ordersRepo)
-	server := grpc.NewServer(grpc.UnaryInterceptor(addLogMiddleware))
-	test.RegisterOrderServiceServer(server, srv)
-
-	logger.GetLoggerFromCtx(ctx).Info(ctx, "listening at :50051")
-	if err = server.Serve(lis); err != nil {
-		logger.GetLoggerFromCtx(ctx).Info(ctx, "failed to serve", zap.Error(err))
+	grpcServer, err := runner.CreateGRPC(ordersRepo)
+	if err != nil {
+		log.Fatalf("failed to create gRPC server: %v", err)
 	}
+	httpServer, err := runner.CreateHTTP(ctx, fmt.Sprintf("localhost:%d", cfg.GRPCPort), cfg.HTTPPort)
+	if err != nil {
+		logger.GetLoggerFromCtx(ctx).Fatal(ctx, "could not register http->grpc gateway handler", zap.Error(err))
+	}
+
+	go runner.RunGRPC(ctx, grpcServer, cfg.GRPCPort)
+	go runner.RunHTTP(ctx, httpServer)
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
+
+	<-quit
+
+	cancelCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	grpcServer.GracefulStop()
+	httpServer.Shutdown(cancelCtx)
+	log.Println("Server Stopped")
 }

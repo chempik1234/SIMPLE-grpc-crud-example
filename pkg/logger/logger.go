@@ -46,3 +46,8 @@ func (l *Logger) Warn(ctx context.Context, msg string, fields ...zap.Field) {
 	fields = TryAppendRequestIDFromContext(ctx, fields)
 	l.l.Warn(msg, fields...)
 }
+
+func (l *Logger) Fatal(ctx context.Context, msg string, fields ...zap.Field) {
+	fields = TryAppendRequestIDFromContext(ctx, fields)
+	l.l.Fatal(msg, fields...)
+}
