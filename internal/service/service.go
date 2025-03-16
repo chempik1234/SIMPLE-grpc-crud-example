@@ -16,17 +16,17 @@ const (
 
 type Service struct {
 	test.OrderServiceServer
-	ordersRepo ports.OrdersRepository
+	ordersRepoStorage ports.OrdersRepository
 }
 
-func New(ordersRepository ports.OrdersRepository) *Service {
+func New(ordersRepoStorage ports.OrdersRepository) *Service {
 	return &Service{
-		ordersRepo: ordersRepository,
+		ordersRepoStorage: ordersRepoStorage,
 	}
 }
 
 func (s *Service) CreateOrder(ctx context.Context, req *test.CreateOrderRequest) (*test.CreateOrderResponse, error) {
-	result, err := s.ordersRepo.CreateOrder(models.Order{
+	result, err := s.ordersRepoStorage.CreateOrder(models.Order{
 		Item:     req.Item,
 		Quantity: req.Quantity,
 	})
@@ -38,7 +38,7 @@ func (s *Service) CreateOrder(ctx context.Context, req *test.CreateOrderRequest)
 }
 
 func (s *Service) GetOrder(ctx context.Context, req *test.GetOrderRequest) (*test.GetOrderResponse, error) {
-	result, err := s.ordersRepo.GetOrder(req.Id)
+	result, err := s.ordersRepoStorage.GetOrder(req.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func (s *Service) GetOrder(ctx context.Context, req *test.GetOrderRequest) (*tes
 }
 
 func (s *Service) UpdateOrder(ctx context.Context, req *test.UpdateOrderRequest) (*test.UpdateOrderResponse, error) {
-	result, err := s.ordersRepo.UpdateOrder(models.Order{
+	result, err := s.ordersRepoStorage.UpdateOrder(models.Order{
 		ID:       req.Id,
 		Item:     req.Item,
 		Quantity: req.Quantity,
@@ -68,7 +68,7 @@ func (s *Service) UpdateOrder(ctx context.Context, req *test.UpdateOrderRequest)
 }
 
 func (s *Service) DeleteOrder(ctx context.Context, req *test.DeleteOrderRequest) (*test.DeleteOrderResponse, error) {
-	result, err := s.ordersRepo.DeleteOrder(req.Id)
+	result, err := s.ordersRepoStorage.DeleteOrder(req.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +77,7 @@ func (s *Service) DeleteOrder(ctx context.Context, req *test.DeleteOrderRequest)
 }
 
 func (s *Service) ListOrders(ctx context.Context, req *test.ListOrdersRequest) (*test.ListOrdersResponse, error) {
-	result, err := s.ordersRepo.ListOrders()
+	result, err := s.ordersRepoStorage.ListOrders()
 	if err != nil {
 		return nil, err
 	}

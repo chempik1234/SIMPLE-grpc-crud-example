@@ -1,10 +1,11 @@
-package ports
+package adapters
 
 import (
 	"fmt"
 	"github.com/google/uuid"
 	"sync"
 	"yandexLyceumTheme3gRPC/internal/models"
+	"yandexLyceumTheme3gRPC/internal/ports"
 )
 
 type OrdersRepositoryInMemory struct {
@@ -19,7 +20,7 @@ func NewOrdersRepositoryInMemory() *OrdersRepositoryInMemory {
 }
 
 func (repo *OrdersRepositoryInMemory) CreateOrder(order models.Order) (models.Order, error) {
-	err := ValidateOrder(order)
+	err := ports.ValidateOrder(order)
 	if err != nil {
 		return models.Order{}, err
 	}
@@ -45,7 +46,7 @@ func (repo *OrdersRepositoryInMemory) GetOrder(id string) (models.Order, error) 
 }
 
 func (repo *OrdersRepositoryInMemory) UpdateOrder(newOrder models.Order) (models.Order, error) {
-	err := ValidateOrder(newOrder)
+	err := ports.ValidateOrder(newOrder)
 	if err != nil {
 		return models.Order{}, err
 	}

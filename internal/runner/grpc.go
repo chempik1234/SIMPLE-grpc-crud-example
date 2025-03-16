@@ -25,7 +25,7 @@ func RunGRPC(ctx context.Context, server *grpc.Server, port int) {
 	}
 }
 
-func CreateGRPC(ordersRepo *ports.OrdersRepositoryInMemory) (*grpc.Server, error) {
+func CreateGRPC(ordersRepo ports.OrdersRepository) (*grpc.Server, error) {
 	grpcSrv := service.New(ordersRepo)
 	server := grpc.NewServer(grpc.UnaryInterceptor(interceptors.AddLogMiddleware))
 	test.RegisterOrderServiceServer(server, grpcSrv)

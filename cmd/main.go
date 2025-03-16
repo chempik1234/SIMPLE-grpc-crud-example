@@ -7,15 +7,17 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"time"
 	"yandexLyceumTheme3gRPC/internal/config"
-	"yandexLyceumTheme3gRPC/internal/ports"
+	"yandexLyceumTheme3gRPC/internal/ports/adapters"
 	"yandexLyceumTheme3gRPC/internal/runner"
 	"yandexLyceumTheme3gRPC/pkg/logger"
+	"yandexLyceumTheme3gRPC/pkg/postgres"
 )
 
 func main() {
 	ctx := context.Background()
+	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
+	defer stop()
 	ctx, _ = logger.New(ctx)
 
 	cfg, err := config.New()
@@ -23,19 +25,14 @@ func main() {
 		logger.GetLoggerFromCtx(ctx).Fatal(ctx, "failed to load config", zap.Error(err))
 	}
 
-	/*
-		pgCfg := cfg.Postgres
+	pgCfg := cfg.Postgres
 
-		fmt.Println(pgCfg)
+	pool, err := postgres.New(ctx, pgCfg)
+	if err != nil {
+		logger.GetLoggerFromCtx(ctx).Fatal(ctx, "failed to connect to database", zap.Error(err))
+	}
 
-		db, err := postgres.New(pgCfg)
-		if err != nil {
-			logger.GetLoggerFromCtx(ctx).Warn(ctx, "failed to connect to database", zap.Error(err))
-		}
-		fmt.Println(db)
-	*/
-
-	ordersRepo := ports.NewOrdersRepositoryInMemory()
+	ordersRepo := adapters.NewOrdersRepositoryPostgres(pool)
 
 	grpcServer, err := runner.CreateGRPC(ordersRepo)
 	if err != nil {
@@ -47,16 +44,26 @@ func main() {
 	}
 
 	go runner.RunGRPC(ctx, grpcServer, cfg.GRPCPort)
-	go runner.RunHTTP(ctx, httpServer)
+	// go runner.RunHTTP(ctx, httpServer)
 
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt)
+	/*
+		quit := make(chan os.Signal, 1)
+		signal.Notify(quit, os.Interrupt)
+	*/
 
-	<-quit
+	select {
+	case <-ctx.Done():
+		grpcServer.GracefulStop()
+		httpServer.Shutdown(ctx)
+		pool.Close()
+		logger.GetLoggerFromCtx(ctx).Info(ctx, "server stopped")
+	}
 
-	cancelCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	grpcServer.GracefulStop()
-	httpServer.Shutdown(cancelCtx)
-	log.Println("Server Stopped")
+	/*
+		cancelCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		grpcServer.GracefulStop()
+		httpServer.Shutdown(cancelCtx)
+		log.Println("Server Stopped")
+	*/
 }
