@@ -74,7 +74,7 @@ func TestGRPC(t *testing.T) {
 			t.Fatalf("Failed to get an order: %v", err)
 		}
 		if response.Order != orderToCreate {
-			t.Fatalf("Failed to get created order\nexpected: %v\ngot %v", response.Order)
+			t.Fatalf("Failed to get created order\nexpected: %v\ngot %v", orderToCreate, response.Order)
 		}
 	})
 	if !ok {
