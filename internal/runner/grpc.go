@@ -14,7 +14,7 @@ import (
 )
 
 func RunGRPC(ctx context.Context, server *grpc.Server, port int) {
-	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", port))
+	lis, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%d", port))
 	if err != nil {
 		logger.GetLoggerFromCtx(ctx).Fatal(ctx, "couldn't create listener on port", zap.Int("port", port), zap.Error(err))
 	}

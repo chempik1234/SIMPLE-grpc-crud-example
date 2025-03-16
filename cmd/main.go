@@ -45,7 +45,7 @@ func main() {
 	}
 
 	go runner.RunGRPC(ctx, grpcServer, cfg.GRPCPort)
-	// go runner.RunHTTP(ctx, httpServer)
+	go runner.RunHTTP(ctx, httpServer)
 
 	/*
 		quit := make(chan os.Signal, 1)

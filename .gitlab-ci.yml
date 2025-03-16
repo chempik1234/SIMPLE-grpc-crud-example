@@ -17,7 +17,7 @@ build:
     - name: docker:24.0.5-dind
       alias: docker
   script:
-    - docker build -t orders_service:latest -f ./build/backendDockerfile ./
+    - docker build -t orders_service:latest ./
     - docker build -t tests:latest -f ./build/integrationTests/Dockerfile ./
 
 test:
@@ -27,6 +27,7 @@ test:
       alias: docker
   script:
     - cp ./env.example .env
-    - docker compose -f ./deployments/integrationTests/docker-compose.yml down
     - docker compose -f ./deployments/integrationTests/docker-compose.yml up -d
-    - docker run --network=deployments_service_network --name test-container tests:latest
+    - docker run --network=integrationtests_deployments_service_network --name test-container tests:latest
+    - docker compose -f ./deployments/integrationTests/docker-compose.yml up down
+    - docker rm -f test-container

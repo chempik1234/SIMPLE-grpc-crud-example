@@ -178,6 +178,9 @@ func request_OrderService_ListOrders_0(ctx context.Context, marshaler runtime.Ma
 		protoReq ListOrdersRequest
 		metadata runtime.ServerMetadata
 	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
 	msg, err := client.ListOrders(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 }
@@ -187,6 +190,9 @@ func local_request_OrderService_ListOrders_0(ctx context.Context, marshaler runt
 		protoReq ListOrdersRequest
 		metadata runtime.ServerMetadata
 	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
 	msg, err := server.ListOrders(ctx, &protoReq)
 	return msg, metadata, err
 }
@@ -277,13 +283,13 @@ func RegisterOrderServiceHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		}
 		forward_OrderService_DeleteOrder_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodGet, pattern_OrderService_ListOrders_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodPost, pattern_OrderService_ListOrders_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/api.OrderService/ListOrders", runtime.WithHTTPPathPattern("/orders"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/api.OrderService/ListOrders", runtime.WithHTTPPathPattern("/api.OrderService/ListOrders"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -405,11 +411,11 @@ func RegisterOrderServiceHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		}
 		forward_OrderService_DeleteOrder_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
-	mux.Handle(http.MethodGet, pattern_OrderService_ListOrders_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle(http.MethodPost, pattern_OrderService_ListOrders_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/api.OrderService/ListOrders", runtime.WithHTTPPathPattern("/orders"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/api.OrderService/ListOrders", runtime.WithHTTPPathPattern("/api.OrderService/ListOrders"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -430,7 +436,7 @@ var (
 	pattern_OrderService_GetOrder_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 1, 0, 4, 1, 5, 1}, []string{"order", "id"}, ""))
 	pattern_OrderService_UpdateOrder_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 1, 0, 4, 1, 5, 1}, []string{"order", "id"}, ""))
 	pattern_OrderService_DeleteOrder_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 1, 0, 4, 1, 5, 1}, []string{"order", "id"}, ""))
-	pattern_OrderService_ListOrders_0  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0}, []string{"orders"}, ""))
+	pattern_OrderService_ListOrders_0  = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"api.OrderService", "ListOrders"}, ""))
 )
 
 var (
