@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"time"
 	"yandexLyceumTheme3gRPC/internal/config"
 	"yandexLyceumTheme3gRPC/internal/ports/adapters"
 	"yandexLyceumTheme3gRPC/internal/runner"
@@ -51,13 +52,20 @@ func main() {
 		signal.Notify(quit, os.Interrupt)
 	*/
 
-	select {
-	case <-ctx.Done():
-		grpcServer.GracefulStop()
-		httpServer.Shutdown(ctx)
-		pool.Close()
-		logger.GetLoggerFromCtx(ctx).Info(ctx, "server stopped")
-	}
+	<-ctx.Done()
+
+	grpcServer.GracefulStop()
+	go func() {
+		cancelCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		err = httpServer.Shutdown(cancelCtx)
+		if err != nil {
+			logger.GetLoggerFromCtx(ctx).Warn(ctx, "failed to shutdown http server", zap.Error(err))
+		}
+	}()
+	pool.Close()
+	logger.GetLoggerFromCtx(ctx).Info(ctx, "server stopped")
 
 	/*
 		cancelCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

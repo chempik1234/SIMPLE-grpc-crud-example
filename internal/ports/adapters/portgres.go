@@ -97,6 +97,11 @@ func (repo *OrdersRepositoryPostgres) UpdateOrder(newOrder models.Order) (models
 		Set("quantity", newOrder.Quantity).
 		PlaceholderFormat(squirrel.Dollar).
 		ToSql()
+	if err != nil {
+		return models.Order{}, fmt.Errorf("Couldn't build and SQL query: %v", err)
+	}
+
+	// perform update query
 	_ = repo.pool.QueryRow(context.Background(), sql, args...).Scan(&order.ID, &order.Item, &order.Quantity)
 
 	return newOrder, nil

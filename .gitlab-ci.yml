@@ -21,6 +21,8 @@ build:
 
 test:
   stage: test
+  services:
+    - docker:24.0.5-dind
   script:
     - cp ./env.example .env
     - docker compose -f ./deployments/integrationTests/docker-compose.yml down

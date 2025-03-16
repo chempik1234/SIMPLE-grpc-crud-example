@@ -16,7 +16,7 @@ func AddLogMiddleware(
 	handler grpc.UnaryHandler,
 ) (interface{}, error) {
 	ctx, _ = logger.New(ctx)
-	ctx = context.WithValue(ctx, logger.RequestID, uuid.New().String())
+	ctx = context.WithValue(ctx, logger.KeyForRequestID, uuid.New().String())
 	logger.GetLoggerFromCtx(ctx).Info(ctx, "gRPC request",
 		zap.String("method", info.FullMethod),
 		zap.Time("request time", time.Now()),
