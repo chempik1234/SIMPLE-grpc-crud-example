@@ -1,0 +1,28 @@
+stages:
+  - lint
+  - build
+  - test
+
+lint:
+  stage: lint
+  image: golangci/golangci-lint:latest
+  allow_failure: true
+  script:
+    golangci-lint run
+
+build:
+  stage: build
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
+  script:
+    - docker build -t orders_service:latest -f ./build/backendDockerfile ./
+    - docker build -t tests:latest -f ./build/integrationTests/Dockerfile ./
+
+test:
+  stage: test
+  script:
+    - cp ./env.example .env
+    - docker compose -f ./deployments/integrationTests/docker-compose.yml down
+    - docker compose -f ./deployments/integrationTests/docker-compose.yml up -d
+    - docker run --network=deployments_service_network --name test-container tests:latest
