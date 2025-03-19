@@ -40,8 +40,8 @@ services:
   backend:
     image: orders_service
     ports:
-      - "8080:8080"
-      - "50051:50051"
+      - "8080"
+      - "50051"
     depends_on:
       postgres:
         condition: service_healthy
@@ -57,6 +57,17 @@ services:
       REDIS_PORT: 6379
       HTTP_PORT: 8080
       GRPC_PORT: 50051
+    networks:
+      - deployments_service_network
+  nginx:
+    image: nginx:latest
+    build: ./build/nginx
+    env_file:
+      - .env
+    ports:
+      - "80"
+    volumes:
+      - ./build/nginx/conf.d:/etc/nginx/conf.d
     networks:
       - deployments_service_network
 
