@@ -18,7 +18,7 @@ type APITestCase struct {
 }
 
 func TestGRPC(t *testing.T) {
-	baseURL := "backend:50051"
+	baseURL := "nginx:80"
 
 	grpcConn, err := grpc.NewClient(baseURL, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {

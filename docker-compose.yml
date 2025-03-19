@@ -29,13 +29,14 @@ services:
       timeout: 1s
       retries: 3
     restart: unless-stopped
-  backend:
+
+  backend_1:
     build:
       context: .
       dockerfile: ./deployments/backend/Dockerfile
     ports:
-      - "${HTTP_PORT}:${HTTP_PORT}"
-      - "${GRPC_PORT}:${GRPC_PORT}"
+      - "${HTTP_PORT_1}:${HTTP_PORT_1}"
+      - "${GRPC_PORT_1}:${GRPC_PORT_1}"
     depends_on:
       postgres:
         condition: service_healthy
@@ -43,6 +44,50 @@ services:
         condition: service_healthy
     env_file:
       - .env
+
+  backend_2:
+    build:
+      context: .
+      dockerfile: ./deployments/backend/Dockerfile
+    ports:
+      - "${HTTP_PORT_2}:${HTTP_PORT_2}"
+      - "${GRPC_PORT_2}:${GRPC_PORT_2}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+
+  backend_3:
+    build:
+      context: .
+      dockerfile: ./deployments/backend/Dockerfile
+    ports:
+      - "${HTTP_PORT_3}:${HTTP_PORT_3}"
+      - "${GRPC_PORT_3}:${GRPC_PORT_3}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./build/nginx/conf.d:/etc/nginx/conf.d
+    depends_on:
+      backend_1:
+        condition: service_started
+      backend_2:
+        condition: service_started
+      backend_3:
+        condition: service_started
 
 volumes:
   postgres_data:

@@ -37,11 +37,11 @@ services:
     networks:
       - deployments_service_network
 
-  backend:
+  backend_1:
     image: orders_service
     ports:
-      - "8080"
-      - "50051"
+      - "8081:8081"
+      - "50051:50051"
     depends_on:
       postgres:
         condition: service_healthy
@@ -55,21 +55,47 @@ services:
       POSTGRES_DB: db_test
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      HTTP_PORT: 8080
+      HTTP_PORT: 8081
       GRPC_PORT: 50051
     networks:
       - deployments_service_network
-  nginx:
-    image: nginx:latest
-    build: ./build/nginx
-    env_file:
-      - .env
+
+  backend_2:
+    image: orders_service
     ports:
-      - "80"
-    volumes:
-      - ./build/nginx/conf.d:/etc/nginx/conf.d
+      - "8082:8082"
+      - "50052:50052"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpassword
+      POSTGRES_DB: db_test
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      HTTP_PORT: 8082
+      GRPC_PORT: 50052
     networks:
       - deployments_service_network
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+    networks:
+      - deployments_service_network
+    depends_on:
+      backend_1:
+        condition: service_started
+      backend_2:
+        condition: service_started
 
 # volumes:
 #   postgres_data:
