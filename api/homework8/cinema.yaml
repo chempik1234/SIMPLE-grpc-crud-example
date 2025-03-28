@@ -1,0 +1,1586 @@
+openapi: 3.0.3
+info:
+  title: Cinema
+  description: Danis yandex lyceum
+  version: '0.1'
+externalDocs:
+  description: Find out more about Swagger
+  url: https://swagger.io
+servers:
+  - url: https://somecoolserver
+tags:
+  - name: Cinema
+  - name: Session
+  - name: Movie
+  - name: Tickets
+  - name: JWT
+  - name: User
+paths:
+  /cinema:
+    get:
+      tags:
+        - Cinema
+      summary: List all created cinemas
+      operationId: listCinema
+      parameters:
+        - in: query
+          name: show_full
+          description: Include rooms, rows and seats
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/Cinema"
+        default:
+          description: Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      security:
+        - authToken: []
+      tags:
+        - Cinema
+      summary: Create a new cinema (show_full is false)
+      operationId: createCinema
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CinemaCreate"
+        required: true
+      responses:
+        '201':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cinema"
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '422':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldsError"
+        default:
+          description: Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /cinema/{id}:
+    get:
+      tags:
+        - Cinema
+      summary: Retrieve a cinema
+      operationId: retrieveCinema
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: show_full
+          description: Include rooms, rows and seats
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cinema"
+        '404':
+          description: Not found error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    put:
+      security:
+        - authToken: []
+      tags:
+        - Cinema
+      summary: Change a cinema
+      operationId: updateCinema
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: show_full
+          description: Include rooms, rows and seats
+          required: false
+          schema:
+            type: boolean
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CinemaCreate"
+      responses:
+        '202':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cinema"
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: Not found error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '422':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldsError"
+        default:
+          description: Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      security:
+        - authToken: []
+      tags:
+        - Cinema
+      summary: Delete a cinema
+      operationId: deleteCinema
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Successful operation
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: Not found error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /room/by-cinema/{cinema_id}:
+    get:
+      tags:
+        - Cinema
+      summary: List rooms by cinema
+      operationId: listRoomsByCinema
+      parameters:
+        - in: path
+          name: cinema_id
+          description: Cinema id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: show_full
+          description: Include rows and seats
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/Room"
+        '404':
+          description: Not found error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      security:
+        - authToken: []
+      tags:
+        - Cinema
+      summary: Delete some rooms for a cinema (deletes all rooms if no room_numbers specified)
+      operationId: deleteRoomsByCinema
+      parameters:
+        - in: path
+          name: cinema_id
+          description: Cinema id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: room_number
+          description: Selected room numbers
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              format: uuid
+      responses:
+        '204':
+          description: Successful operation
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: Not found error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /room/by-id/{id}:
+    get:
+      tags:
+        - Cinema
+      summary: List rooms by cinema
+      operationId: retrieveRoomById
+      parameters:
+        - in: path
+          name: id
+          description: Room id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: show_full
+          description: Include rows and seats
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Room"
+        '404':
+          description: Not found error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      security:
+        - authToken: []
+      tags:
+        - Cinema
+      summary: Delete a room
+      operationId: deleteRoomById
+      parameters:
+        - in: path
+          name: id
+          description: Room id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Successful operation
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: Not found error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '422':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldsError"
+        default:
+          description: Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /room:
+    post:
+      security:
+        - authToken: []
+      tags:
+        - Cinema
+      summary: Create N rooms for cinema (show_full is false)
+      operationId: createRoomsByCinema
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RoomCreate"
+        required: true
+      responses:
+        '201':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Room"
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: Not found error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '422':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldsError"
+        default:
+          description: Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /row/by-room/{room_id}:
+    get:
+      tags:
+        - Cinema
+      summary: Get rows by room
+      operationId: listRowsByRoom
+      parameters:
+        - in: path
+          name: id
+          description: Room id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: show_full
+          description: Include rows and seats
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/Row"
+        '404':
+          description: Not found error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      security:
+        - authToken: []
+      tags:
+        - Cinema
+      summary: Delete some rows for a room (deletes all rows if no row_numbers specified)
+      operationId: deleteRowsByRoom
+      parameters:
+        - in: path
+          name: room_id
+          description: Room id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: row_number
+          description: Selected row numbers
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              format: uuid
+      responses:
+        '204':
+          description: Successful operation
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: Not found error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '422':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldsError"
+        default:
+          description: Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /row:
+    post:
+      security:
+        - authToken: []
+      tags:
+        - Cinema
+      summary: Create N rows for a room (show_full is false)
+      operationId: createRowsByRoom
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RowCreate"
+        required: true
+      responses:
+        '201':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Row"
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: Not found error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '422':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldsError"
+        default:
+          description: Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /seat/by-row/{row_id}:
+    get:
+      tags:
+        - Cinema
+      summary: Get seats by row
+      operationId: listSeatsByRow
+      parameters:
+        - in: path
+          name: id
+          description: Row id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/Seat"
+        '404':
+          description: Not found error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      security:
+        - authToken: []
+      tags:
+        - Cinema
+      summary: Delete some seats for a row (deletes all seats if no seat_numbers specified)
+      operationId: deleteRowsByRoom
+      parameters:
+        - in: path
+          name: room_id
+          description: Room id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: seat_number
+          description: Selected seat numbers
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              format: uuid
+      responses:
+        '204':
+          description: Successful operation
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: Not found error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '422':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldsError"
+        default:
+          description: Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /seat:
+    post:
+      security:
+        - authToken: []
+      tags:
+        - Cinema
+      summary: Create N seats for a row
+      operationId: createSeatsByRow
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SeatCreate"
+        required: true
+      responses:
+        '201':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Seat"
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: Not found error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '422':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldsError"
+        default:
+          description: Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /movie:
+    get:
+      tags:
+        - Movie
+      summary: list all movies
+      operationId: listMovies
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+               schema:
+                 type: array
+                 items:
+                   $ref: "#/components/schemas/Movie"
+        default:
+          description: Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      security:
+        - authToken: []
+      tags:
+        - Movie
+      summary: create a Movie
+      operationId: createMovie
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MovieCreate"
+      responses:
+        '201':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Movie"
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '422':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldsError"
+        default:
+          description: Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /movie/{id}:
+    get:
+      tags:
+        - Movie
+      summary: retrieve a Movie
+      operationId: retrieveMovie
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Movie"
+        '404':
+          description: Not found error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    put:
+      security:
+        - authToken: []
+      tags:
+        - Movie
+      summary: update a Movie
+      operationId: updateMovie
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MovieCreate"
+      responses:
+        '202':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Movie"
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: Not found error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '422':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldsError"
+        default:
+          description: Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      security:
+        - authToken: []
+      tags:
+        - Movie
+      summary: delete a Movie
+      operationId: deleteMovie
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Successful operation
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: Not found error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /session:
+    get:
+      tags:
+        - Session
+      summary: list Sessions by Cinema
+      operationId: listSessionsByCinema
+      parameters:
+        - name: cinema_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+          required: true
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+          required: true
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+          required: false
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Session"
+        '404':
+          description: Not found error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      security:
+        - authToken: []
+      tags:
+        - Session
+      summary: create Session
+      operationId: createSession
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SessionCreate"
+      responses:
+        '201':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Session"
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: Not found error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /session/{session_id}:
+    delete:
+      security:
+        - authToken: []
+      tags:
+        - Session
+      summary: delete session
+      operationId: deleteSession
+      parameters:
+        - in: path
+          name: session_id
+          schema:
+            type: string
+            format: uuid
+          required: true
+      responses:
+        '204':
+          description: Successful operation
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: Not found error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /user:
+    get:
+      tags:
+        - User
+      summary: List all users (for admins)
+      operationId: listUsers
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/User"
+        default:
+          description: Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      tags:
+        - User
+      summary: Create new user (for admin)
+      operationId: createUser
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        '422':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldsError"
+        default:
+          description: Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /sign-up:
+    post:
+      tags:
+        - User
+      operationId: signUp
+      summary: Sign up (degraded admin endpoint)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignUp"
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        '422':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldsError"
+        default:
+          description: Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /sign-in:
+    post:
+      tags:
+        - JWT
+      operationId: signIn
+      summary: Retrieve new token pair
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignIn"
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JWTPair"
+        '422':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldsError"
+        '401':
+          description: Wrong credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /refresh:
+    post:
+      tags:
+        - JWT
+      summary: refresh access token
+      operationId: refreshToken
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JWTRefresh"
+        required: true
+      responses:
+        '202':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JWTPair"
+        '422':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldsError"
+        '401':
+          description: Wrong credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          description: Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /ticket:
+    post:
+      tags:
+        - Tickets
+      summary: Buy a ticket
+      operationId: createTicket
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TicketCreate"
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ticket"
+        '422':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FieldsError"
+        default:
+          description: Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+components:
+  schemas:
+    CinemaCreate:
+      type: object
+      required:
+        - title
+        - city
+      properties:
+        title:
+          type: string
+          example: 'Верба cinema'
+        city:
+          type: string
+          example: 'Октябрьский; республика Башкортостан'
+    Cinema:
+      allOf:
+        - $ref: "#/components/schemas/CinemaCreate"
+        - type: object
+          required:
+            - id
+            - created_at
+          properties:
+            id:
+              type: string
+              format: uuid
+            created_at:
+              type: string
+              format: date
+            rooms:
+              type: array
+              items:
+                $ref: "#/components/schemas/Room"
+    CinemaFull:
+      allOf:
+        - $ref: "#/components/schemas/Cinema"
+        - type: object
+          properties:
+            rooms:
+              type: array
+              items:
+                $ref: "#/components/schemas/Room"
+    RoomCreate:
+      type: object
+      required:
+        - amount
+        - cinema_id
+      properties:
+        amount:
+          type: integer
+          default: 1
+        cinema_id:
+          type: string
+          format: uuid
+    Room:
+      type: object
+      required:
+        - id
+        - number
+        - cinema_id
+      properties:
+        id:
+          type: string
+          format: uuid
+        cinema_id:
+          type: string
+          format: uuid
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/Row"
+        number:
+          type: integer
+          default:
+    RowCreate:
+      type: object
+      required:
+        - amount
+        - room_id
+      properties:
+        amount:
+          type: integer
+          default: 1
+        room_id:
+          type: string
+          format: uuid
+    Row:
+      type: object
+      required:
+        - id
+        - room_id
+        - number
+      properties:
+        id:
+          type: string
+          format: uuid
+        room_id:
+          type: string
+          format: uuid
+        number:
+          type: integer
+          default: 1
+    SeatCreate:
+      type: object
+      required:
+        - amount
+        - row_id
+      properties:
+        amount:
+          type: integer
+          default: 1
+        row_id:
+          type: string
+          format: uuid
+    Seat:
+      type: object
+      required:
+        - id
+        - row_id
+        - number
+      properties:
+        id:
+          type: string
+          format: uuid
+        row_id:
+          type: string
+          format: uuid
+        number:
+          type: integer
+          default: 1
+    MovieCreate:
+      type: object
+      required:
+        - title
+        - author
+        - description
+        - length
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        author:
+          type: string
+        length:
+          type: string
+          format: time
+          default: '01:20:30.00Z'
+    Movie:
+      allOf:
+        - $ref: "#/components/schemas/MovieCreate"
+        - type: object
+          required:
+            - id
+            - created_at
+          properties:
+            id:
+              type: string
+              format: uuid
+            created_at:
+              type: string
+              format: date
+    SessionCreate:
+      type: object
+      required:
+        - room_id
+        - display_datetime
+        - length
+      properties:
+        room_id:
+          type: string
+          format: uuid
+        display_datetime:
+          type: string
+          format: date-time
+        length:
+          type: string
+          format: time
+          default: '01:50:00.00Z'
+    Session:
+      allOf:
+        - $ref: "#/components/schemas/SessionCreate"
+        - type: object
+          required:
+            - id
+          properties:
+            id:
+              type: string
+              format: uuid
+    TicketCreate:
+      type: object
+      required:
+        - session_id
+        - seat_id
+      properties:
+        session_id:
+          type: string
+          format: uuid
+        seat_id:
+          type: string
+          format: uuid
+    Ticket:
+      allOf:
+        - $ref: "#/components/schemas/TicketCreate"
+        - type: object
+          required:
+            - id
+          properties:
+            id:
+              type: string
+              format: uuid
+    UserShort:
+      type: object
+      required:
+        - login
+      properties:
+        login:
+          type: string
+    UserCreate:
+      allOf:
+        - $ref: "#/components/schemas/UserShort"
+        - type: object
+          required:
+            - password
+            - is_admin
+          properties:
+            password:
+              type: string
+              format: password
+            is_admin:
+              type: boolean
+              default: false
+    User:
+      allOf:
+        - $ref: "#/components/schemas/UserShort"
+        - type: object
+          required:
+            - id
+          properties:
+            id:
+              type: string
+              format: uuid
+    SignUp:
+      allOf:
+        - $ref: "#/components/schemas/UserShort"
+        - type: object
+          required:
+            - password
+          properties:
+            password:
+              type: string
+              format: password
+    SignIn:
+      type: object
+      required:
+        - login
+        - password
+      properties:
+        login:
+          type: string
+        password:
+          type: string
+          format: password
+    JWTPair:
+      type: object
+      required:
+        - access
+        - refresh
+      properties:
+        access:
+          type: string
+        refresh:
+          type: string
+    JWTRefresh:
+      type: object
+      required:
+        - refresh
+      properties:
+        refresh:
+          type: string
+    Error:
+      type: object
+      required:
+        - status
+        - message
+      properties:
+        status:
+          type: string
+          default: "error"
+        message:
+          type: string
+          default: "unknown error"
+    FieldError:
+      type: object
+      required:
+        - field_name
+        - field_errors
+      properties:
+        field_name:
+          type: string
+        field_errors:
+          type: array
+          items:
+            type: string
+    FieldsError:
+      allOf:
+        - $ref: "#/components/schemas/Error"
+        - type: object
+          required:
+            - fields
+          properties:
+            fields:
+              type: array
+              items:
+                $ref: "#/components/schemas/FieldError"
+  securitySchemes:
+    authToken:
+      type: apiKey
+      description: Bearer <token>
+      name: api-key
+      in: header
